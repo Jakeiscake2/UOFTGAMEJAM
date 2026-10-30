@@ -1,0 +1,92 @@
+using UnityEngine;
+
+
+[RequireComponent(typeof(EnemyMovement))]
+public class Enemy : MonoBehaviour
+{
+    [Header("Stats")]
+    [SerializeField] private float maxHealth = 10f;
+    [SerializeField] private float timeReward = 2f;
+
+    [Header("Vision")]
+    [SerializeField] private float visionRange = 8f;
+    [SerializeField] private bool requireLineOfSight = false;
+    [SerializeField] private LayerMask obstacleMask;
+
+    public float VisionRange => visionRange;
+
+    protected Transform Target { get; private set; }
+    protected bool CanSeeTarget { get; private set; }
+    protected float Health { get; private set; }
+
+    private EnemyMovement _movement;
+    protected EnemyMovement Movement => _movement;   // let subclasses drive movement directly
+
+    protected virtual void Awake()
+    {
+        _movement = GetComponent<EnemyMovement>();
+        Health = maxHealth;
+    }
+
+    protected virtual void Start()
+    {
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player != null) Target = player.transform;
+    }
+
+    protected virtual void FixedUpdate()
+    {
+        CanSeeTarget = CanSee(Target);
+
+        // Chase only while the player is in sight
+        _movement.Tick(CanSeeTarget ? Target : null);
+    }
+
+    protected bool CanSee(Transform target)
+    {
+        if (target == null) return false;
+
+        Vector2 origin = transform.position;
+        Vector2 toTarget = (Vector2)target.position - origin;
+
+        //out of range
+        if (toTarget.sqrMagnitude > visionRange * visionRange) return false;
+
+        //obsticle inbetween
+        if (requireLineOfSight &&
+            Physics2D.Raycast(origin, toTarget.normalized, toTarget.magnitude, obstacleMask))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public virtual void TakeDamage(float amount)
+    {
+        Health -= amount;
+        if (Health <= 0f)
+        {
+            if (GameManager.Instance != null) GameManager.Instance.AddTime(timeReward);
+            Die();
+        }
+    }
+
+    protected virtual void Die()
+    {
+        // add rewards, particles, etc
+        AudioManager.Instance.PlayAtPosition("enemyDeath", transform.position, 0.7f);
+        int spawnChance = Random.Range(0, 100);
+        if(spawnChance < LevelManager.Instance.dropRate)
+        {
+            Debug.Log("Dropped");
+            GameObject drops = Instantiate(LevelManager.Instance.itemDropPrefab, transform.position, Quaternion.identity);
+            ItemController controller = drops.GetComponent<ItemController>(); 
+            BodyItem item = Instantiate(LevelManager.Instance.getBodyItem()); 
+            item.OnSetUp();
+            controller.item = item;
+        }
+        Destroy(gameObject);
+    }
+
+}

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bef92445b46dc24090a31b925fd8262, type: 3}
+  m_Name: ColorCanLibrary
+  m_EditorClassIdentifier: Assembly-CSharp::ColorCanLibrary
+  Library:
+  - color: 0
+    sprite: {fileID: 0}
+  - color: 1
+    sprite: {fileID: 8338034916800294954, guid: 11214d166db8ef843939bfd622c01410, type: 3}
+  - color: 2
+    sprite: {fileID: -4678909729814778881, guid: 85e11b718d944014d8057e93f74d75d3, type: 3}
+  - color: 4
+    sprite: {fileID: 2352280882194198658, guid: aa82f14d59b58b5469078b16c57929c7, type: 3}
+  - color: 3
+    sprite: {fileID: -6410442598547967069, guid: 7fa5c868f824dbc4cab0a5a98f65732a, type: 3}
+  - color: 6
+    sprite: {fileID: -899649328345757867, guid: 4463669cf502fc04fbdcaee9f7bb96e3, type: 3}
+  - color: 5
+    sprite: {fileID: -2093324750932669864, guid: 68150f5a15248db46bdd949984731ff0, type: 3}
+  - color: 7
+    sprite: {fileID: 559502646492287783, guid: 68304c9e3194ee1489c813d8ce59031e, type: 3}

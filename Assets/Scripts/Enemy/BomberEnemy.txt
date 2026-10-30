@@ -1,0 +1,94 @@
+using UnityEngine;
+
+public class BomberEnemy : Enemy
+{
+    private enum BomberState { Dormant, Chasing }
+
+    [SerializeField] private float fuseTime = 3f;
+
+    //debug
+    [SerializeField] private SpriteRenderer sprite;
+    [SerializeField] private Color calmColor = Color.white;
+    [SerializeField] private Color dangerColor = Color.red;
+    [SerializeField] private Animator _animator;
+    [SerializeField] private LayerMask playerMask;
+    float slowFlash = 0.4f;
+    float fastFlash = 0.05f;
+
+    private BomberState _state = BomberState.Dormant;
+    private float _fuse;
+    private float _flashTimer;
+    private bool _flashOn;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        if (sprite == null) sprite = GetComponentInChildren<SpriteRenderer>();
+    }
+
+    protected override void FixedUpdate()
+    {
+        switch (_state)
+        {
+            case BomberState.Dormant: Dormant(); break;
+            case BomberState.Chasing: Chase();   break;
+        }
+    }
+
+    private void Dormant()
+    {
+        Movement.Stop();
+
+        if (CanSee(Target))
+        {
+            _state = BomberState.Chasing;
+            _fuse = fuseTime;
+        }
+    }
+
+    private void Chase()
+    {
+        if (CanSee(Target))
+            Movement.Tick(Target);
+        else
+            Movement.Wander();
+
+        FlashFuse();
+
+        _fuse -= Time.fixedDeltaTime;
+        if (_fuse <= 0f) Explode();
+    }
+
+    // Debug: flash between two colours, faster as the fuse runs down.
+    private void FlashFuse()
+    {
+        if (sprite == null) return;
+
+        float t = 1f - Mathf.Clamp01(_fuse / fuseTime);        // 0 when armed -> 1 at detonation
+        float period = Mathf.Lerp(slowFlash, fastFlash, t);    // flash interval shrinks over time
+
+        _flashTimer += Time.fixedDeltaTime;
+        if (_flashTimer >= period)
+        {
+            _flashTimer = 0f;
+            _flashOn = !_flashOn;
+            sprite.color = _flashOn ? dangerColor : calmColor;
+        }
+    }
+
+    private void Explode()
+    {
+        //need to update player controller for this to work propperly, right now the cahracter just kills himself
+
+        // TODO later: VFX, stun, explosion knockback, timer decay, etc
+        Movement.Stop();
+        
+        bool inExplosion = Physics2D.OverlapCircle(transform.position, 1f, playerMask);
+        if (inExplosion)
+        {
+            if (GameManager.Instance != null) GameManager.Instance.AddTime(-8);
+        }
+        _animator.SetBool("isDead", true);
+    }
+
+}
